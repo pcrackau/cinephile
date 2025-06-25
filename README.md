@@ -24,5 +24,7 @@ TODOs:
 - Implement tensorflow for Mac: https://developer.apple.com/metal/tensorflow-plugin/
 - Object detection tensorflow: https://www.tensorflow.org/hub/tutorials/object_detection
 - Reverse image search: https://lantern.dev/tutorials/python/image
-- Process all information for Ollama to use
+- Process all information for Ollama to use:
+  * process JSON with langchain: https://how.wtf/how-to-use-json-files-in-vector-stores-with-langchain.html
+  
 Other potential search: 
