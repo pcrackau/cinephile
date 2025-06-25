@@ -13,3 +13,16 @@
 - “Find a scene from 1940s Germany in which a woman is working with a machine in a medium shot.”
 - “Find a film where a medium shot of a soldier cuts to a close-up of his face.”
 - “Find all films made after 1945 that contain shots resembling the input image.”
+
+
+## Pipeline
+- parse JSONs
+TODOs:
+- RAG with Ollama and Langchain: https://www.datacamp.com/tutorial/llama-3-1-rag?dc_referrer=https%3A%2F%2Fduckduckgo.com%2F
+- Cut detection using (try) screen detect: https://www.scenedetect.com/docs/latest/api.html
+- Shot type detection (try) shot type classifier: https://github.com/rsomani95/shot-type-classifier/
+- Implement tensorflow for Mac: https://developer.apple.com/metal/tensorflow-plugin/
+- Object detection tensorflow: https://www.tensorflow.org/hub/tutorials/object_detection
+- Reverse image search: https://lantern.dev/tutorials/python/image
+- Process all information for Ollama to use
+Other potential search: 

@@ -8,7 +8,7 @@ from common.json_processing import load_jsons
 import time
 import requests
 
-PATH_FILMS = "../datasets"      # relative path
+PATH_FILMS = "./datasets"      # relative path from cine_challenge
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "llama3"
 
