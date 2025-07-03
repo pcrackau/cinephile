@@ -12,6 +12,9 @@ PATH_FILMS = "./datasets"      # relative path from cine_challenge
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "llama3"
 
+# runs pipeline to vectorize all info, if no chroma_db
+# else runs directly responder
+
 
 def query_ollama(prompt, model=MODEL_NAME):     # check which models available in command line: ollama list
     start_time = time.time()
