@@ -8,7 +8,7 @@ from langchain.schema import Document
 import time
 import requests
 
-PATH_FILMS = "./datasets"
+PATH_FILMS = "datasets/"
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "llama3"
