@@ -1,5 +1,5 @@
 processing/
 datasets/
 .DS_Store
-chroma_db
+chroma_db/
 yolov8x.pt
