@@ -1,5 +1,8 @@
 processing/
 datasets/
+finetune_data/
+images/
+models/
 .DS_Store
 chroma_db/
 yolov8x.pt

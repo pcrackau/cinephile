@@ -23,6 +23,10 @@ for result in results:
         confidence = float(box.conf[0])
         print(f"Detected: {label} ({confidence:.2%})")
 
+def detect_objects(image):
+    results = model(image)
+    for result in results:
+        print(result.boxes)
 
 
 # finetune
