@@ -1,3 +1,4 @@
+import os
 import cv2
 import subprocess
 from pathlib import Path
@@ -24,7 +25,7 @@ class CutDetector:
 
         return [(int(start.get_frames()), int(end.get_frames())) for start, end in scene_list]
 
-    
+    # TODO return start/end-time of cut for json store
     def extract_cut(self, input_path: Path, start_frame: int, end_frame: int, fps: float, output_path: Path):
         start_time = self._frames_to_timecode(start_frame, fps)
         duration = (end_frame - start_frame) / fps
@@ -37,6 +38,7 @@ class CutDetector:
             str(output_path)
         ], check=True)
 
+
     def save_all_cuts(self, video_path: Path, cuts: list[tuple[int, int]], output_dir: Path):
         cap = cv2.VideoCapture(str(video_path))
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -46,7 +48,11 @@ class CutDetector:
 
         for i, (start, end) in enumerate(cuts):
             output_path = output_dir / f"{video_path.stem}_cut_{i+1:03}.mp4"
+            
+            if output_path.exists():
+                os.remove(output_path)
             self.extract_cut(video_path, start, end, fps, output_path)
+            
 
     def _frames_to_timecode(self, frame_num: int, fps: float) -> str:
         seconds = frame_num / fps

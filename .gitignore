@@ -1,5 +1,6 @@
 processing/
 datasets/
+datasets_2/
 finetune_data/
 images/
 models/

@@ -3,6 +3,7 @@
 
 ## Challenge
 Work in progress for a RAG challenge
+Submission deadline: 08/31/2025
 
 
 - Searching the metadata for information

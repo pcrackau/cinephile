@@ -7,26 +7,26 @@ from ultralytics import YOLO
 from pathlib import Path
 from common.helper import get_film_title, find_film_files
 
-DATASETS = "datasets/"
-
-film_path_lst = find_film_files(DATASETS)
-film_path = film_path_lst[786]   
-frames_output_dir = Path("processing") / film_path.stem / "key_frames"
-
-model = YOLO("yolov8x.pt")
-results = model(frames_output_dir / "keyFrames" / "keyframe8.jpg")
-for result in results:
-    #print(result.boxes)
-    for box in results[0].boxes:
-        class_id = int(box.cls[0])
-        label = results[0].names[class_id]
-        confidence = float(box.conf[0])
-        print(f"Detected: {label} ({confidence:.2%})")
-
-def detect_objects(image):
+# TODO yolo only detects "person", expand with fairface or deepface
+def detect_objects(image, model):
     results = model(image)
+    objects = []
+
     for result in results:
-        print(result.boxes)
+        for box in result.boxes:
+            class_id = int(box.cls[0])
+            label = result.names[class_id]
+            confidence = float(box.conf[0])
+            print(f"Detected: {label} ({confidence:.2%})")
+            print(result.boxes)
+            bbox = [float(x) for x in box.xyxy[0].tolist()]
+            objects.append({
+                "label": label,
+                "confidence": confidence,
+                "bbox": bbox
+            })
+    
+    return objects
 
 
 # finetune

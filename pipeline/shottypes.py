@@ -37,3 +37,4 @@ def predict_shottype(sample_image):
         pred_class = probs.argmax().item()
 
     print(f"Shottype: {class_names[pred_class]}")
+    return f"{class_names[pred_class]}"
