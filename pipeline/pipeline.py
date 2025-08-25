@@ -9,7 +9,7 @@ from KeyFrameDetector.key_frame_detector import keyframeDetection
 from cutdetection import CutDetector
 from pathlib import Path
 
-from common.helper import find_film_metadata_pairs, collect_jpgs, find_film_files
+from common.helper import find_films, collect_jpgs, find_film_files
 
 from embedding import embed_and_store, load_or_create_chroma, generate_docs, load_chroma
 from identifyobjects import detect_objects
@@ -23,8 +23,10 @@ LANGUAGE = "en"
 def main(args : argparse.Namespace):
     overwrite_flag = args.overwrite
     
-    film_path_lst = find_film_metadata_pairs(DATASETS)
-    #film_path_lst = find_film_files(DATASETS)
+    films = find_films(DATASETS)
+    for film in films:
+
+        print(film.video_path)
 
 
     model_path = os.path.abspath("models/yolov8x.pt")
@@ -32,10 +34,12 @@ def main(args : argparse.Namespace):
     db = load_chroma()
     docs = []
 
-    for film_path, metadata_path in film_path_lst:
+    
+    for film in films:
     #for film_path in film_path_lst:
-        print(f"Processing {film_path.name}")
-        
+        print(f"Processing {film.video_path}")
+        print(film.metadata_path)
+"""        
         with open(metadata_path, "r") as f:
             film_metadata = json.load(f)
 
@@ -83,9 +87,10 @@ def main(args : argparse.Namespace):
             docs.extend(new_doc)
 
     ## Embedding
-    db.add_documents(docs)     
+    if docs:
+        db.add_documents(docs)     
     db.persist()
-
+"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Set boolean flag to overwrite existing cut segments.')
