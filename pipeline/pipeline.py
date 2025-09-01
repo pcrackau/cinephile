@@ -39,9 +39,11 @@ def main(args : argparse.Namespace):
     #for film_path in film_path_lst:
         print(f"Processing {film.video_path}")
         print(film.metadata_path)
-"""        
-        with open(metadata_path, "r") as f:
+      
+        with open(film.metadata_path, "r") as f:
             film_metadata = json.load(f)
+
+        film_path = film.video_path
 
         ## Cut detection, split films
         cut_detector = CutDetector(threshold=20.0)
@@ -83,14 +85,13 @@ def main(args : argparse.Namespace):
             with open(output_path, "w") as f:
                 json.dump(frame_info, f, indent=2)
 
-            new_doc = generate_docs(metadata_path, output_path)
+            new_doc = generate_docs(film.metadata_path, output_path)
             docs.extend(new_doc)
 
     ## Embedding
     if docs:
         db.add_documents(docs)     
-    db.persist()
-"""
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Set boolean flag to overwrite existing cut segments.')
