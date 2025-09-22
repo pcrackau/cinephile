@@ -1,10 +1,18 @@
 # cinephile
 
+## How to use
+First, in order to prepare the required data: 
+- create a folder datasets and place all film folders in it
+- run './script/image_crawl.sh' to download images for shot-type classification from filmschoolrejects.com
+- run 'python scripts/train_shottype.ipynb' to train a vgg16-model for shottype-task
+After preparing the data:
+- run 'python pipeline/pipeline.py' once. This processes the data and adds it to a chroma_db
+As currently implemented, run 'python responder.py' to chat with Ollama retrieving data from chroma_db
+
 
 ## Challenge
-Work in progress for a RAG challenge
+RAG challenge "Implement a Cinephile Search Tool"
 Submission deadline: 08/31/2025
-
 
 - Searching the metadata for information
 - Detecting as many shot types as possible (e.g., long shot, medium shot, American shot, close-up, extreme close-up)
@@ -20,7 +28,6 @@ Submission deadline: 08/31/2025
 
 ## Pipeline
 - parse JSONs
-TODOs:
 - RAG with Ollama and Langchain: https://www.datacamp.com/tutorial/llama-3-1-rag?dc_referrer=https%3A%2F%2Fduckduckgo.com%2F
 - Cut detection using (try) screen detect: https://www.scenedetect.com/docs/latest/api.html
 - Shot type detection (try) shot type classifier: https://github.com/rsomani95/shot-type-classifier/
@@ -29,5 +36,10 @@ TODOs:
 - Reverse image search: https://lantern.dev/tutorials/python/image
 - Process all information for Ollama to use:
   * process JSON with langchain: https://how.wtf/how-to-use-json-files-in-vector-stores-with-langchain.html
-  
-Other potential search: 
+
+
+## TODOs: 
+- integrate responder in GUI
+- get similarity image search running in GUI
+- replace YOLO object-detection
+- test against ground_truth_validation_set.json

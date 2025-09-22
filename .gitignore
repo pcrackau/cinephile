@@ -7,3 +7,4 @@ models/
 .DS_Store
 chroma_db/
 yolov8x.pt
+test.py

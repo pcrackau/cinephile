@@ -11,7 +11,7 @@ import requests
 PATH_FILMS = "datasets/"
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "llama3"
+MODEL_NAME = "llama3:latest"
 
 def load_and_embed_jsons(path):
     embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -19,9 +19,6 @@ def load_and_embed_jsons(path):
     documents = loader.load()
 
     db = Chroma.from_documents(documents, embedding_function)
-    #query = "What year did albert einstein win the nobel prize?"
-    #docs = db.similarity_search(query)
-    #print(docs[0].page_content)
     return db
 
 
@@ -33,24 +30,6 @@ def load_jsons(path):
             data.append(film)
     return data
 
-    # TODO replace in load_or_create_chroma
-    """for item in items:
-    if isinstance(item, dict):
-        # Extract relevant fields only
-        title = item.get("title", "")
-        description = item.get("description", "")
-        year = item.get("year", "")
-        country = item.get("country", "")
-        
-        # Customize formatting according to data used
-        content = f"{title} ({year}, {country})\n\n{description}"
-        
-        doc = Document(
-            page_content=content.strip(),
-            metadata={"source": str(file)}
-        )
-        documents.append(doc)
-    """
 
 def load_or_create_chroma(path, persist_dir="chroma_db"):
     embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -91,10 +70,6 @@ def load_or_create_chroma(path, persist_dir="chroma_db"):
     db.persist()
     
     return db
-
-def vector_embedding_json(path, embedding_function):
-    pass
-
 
 def query_ollama(prompt, model=MODEL_NAME):     # check which models available in command line: ollama list
     start_time = time.time()

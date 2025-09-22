@@ -8,7 +8,7 @@ from scenedetect.detectors import ContentDetector
 
 
 class CutDetector:
-    def __init__(self, threshold: float = 30.0):
+    def __init__(self, threshold: float = 25.0):
         self.threshold = threshold
 
     def detect_scenes(self, video_path: str):
@@ -25,10 +25,11 @@ class CutDetector:
 
         return [(int(start.get_frames()), int(end.get_frames())) for start, end in scene_list]
 
-    # TODO return start/end-time of cut for json store
+
     def extract_cut(self, input_path: Path, start_frame: int, end_frame: int, fps: float, output_path: Path):
         start_time = self._frames_to_timecode(start_frame, fps)
         duration = (end_frame - start_frame) / fps
+        end_time = self._frames_to_timecode(end_frame, fps)
 
         subprocess.run([
             "ffmpeg",
@@ -38,21 +39,36 @@ class CutDetector:
             str(output_path)
         ], check=True)
 
+        return {
+            "cut_file": str(output_path),
+            "start_frame": start_frame,
+            "end_frame": end_frame,
+            "fps": fps,
+            "start_time": start_time,
+            "end_time": end_time,
+            "duration": duration
+        }
+
 
     def save_all_cuts(self, video_path: Path, cuts: list[tuple[int, int]], output_dir: Path):
         cap = cv2.VideoCapture(str(video_path))
+        print(cap.isOpened())
         fps = cap.get(cv2.CAP_PROP_FPS)
         cap.release()
 
+        cuts = self.detect_scenes(str(video_path))
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        cut_metadata = []
         for i, (start, end) in enumerate(cuts):
             output_path = output_dir / f"{video_path.stem}_cut_{i+1:03}.mp4"
             
             if output_path.exists():
                 os.remove(output_path)
-            self.extract_cut(video_path, start, end, fps, output_path)
-            
+            cut_info = self.extract_cut(video_path, start, end, fps, output_path)
+            cut_metadata.append(cut_info)
+        
+        return cut_metadata
 
     def _frames_to_timecode(self, frame_num: int, fps: float) -> str:
         seconds = frame_num / fps

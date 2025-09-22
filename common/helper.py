@@ -4,10 +4,6 @@ sys.path.append(os.getcwd())
 from pathlib import Path
 from common.structs import Film
 
-def get_film_title(path: Path):
-    file = Path(path)
-    title = file.stem
-    return title
 
 def find_film_files(directory, extensions=None):
     if extensions is None:
@@ -18,14 +14,6 @@ def find_film_files(directory, extensions=None):
     ]
     return video_files
 
-def collect_jpgs(directory, extensions=None):
-    if extensions is None:
-        extensions = [".jpg"]
-    image_files = [
-        file for file in Path(directory).rglob("*")
-        if file.suffix.lower() in extensions
-    ]
-    return image_files
 
 def find_films(directory, extensions=None, metadata_ext=".json") -> list[Film]:
     if extensions is None:
@@ -44,3 +32,15 @@ def find_films(directory, extensions=None, metadata_ext=".json") -> list[Film]:
             print(f"No metadata found for: {video_file.name}")
 
     return films
+
+
+def pipeline_steps(steps: str):
+    step_lst = []
+    step_chars = list(steps.replace(',',''))
+    if step_chars.__contains__('-'):
+        step_lst = list(range(int(step_chars[0]),int(step_chars[-1])+1))
+    else:
+        step_lst = list(map(int,step_chars))
+    return step_lst
+
+

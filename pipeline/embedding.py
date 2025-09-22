@@ -11,17 +11,9 @@ def load_chroma(persist_dir="chroma_db"):
     return Chroma(persist_directory=persist_dir, embedding_function=embedding_function)
 
 
-def embed_and_store(documents: list[Document], persist_dir: str):
-    embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    
-    db = Chroma.from_documents(
-        documents=documents,
-        embedding=embedding_function,
-        persist_directory=persist_dir
-    )
-    
-    db.persist()
-    return db
+def query_chroma(db, query: str, k: int = 5):
+    results = db.similarity_search(query, k=k)
+    return [doc.page_content for doc in results]
 
 
 def _load_film_metadata(metadata_path):
@@ -29,7 +21,7 @@ def _load_film_metadata(metadata_path):
         return json.load(f)
 
 
-def generate_vectorization_text(film_metadata, keyframe_data, language):
+def generate_vectorization_text(film_metadata, keyframe_data):
     parts = [
         f"Film Title: {film_metadata.get('title', 'Unknown')}",
         #f"Film Title: {film_metadata.get('dcTitleLangAware', {}).get(language, ['Unknown'])[0]}",
@@ -50,34 +42,37 @@ def generate_vectorization_text(film_metadata, keyframe_data, language):
     return "\n".join(parts)
 
 
-def generate_docs(metadata_path, keyframes_dir):
+def generate_docs(metadata_path, keyframes_dir: Path):
+    """
+    Given a film's metadata and the keyframes directory for one cut,
+    load all keyframe JSONs and return LangChain Documents.
+    """
     film_metadata = _load_film_metadata(metadata_path)
     docs = []
 
-    for keyframe_json in sorted(Path(keyframes_dir).glob("*.json")):
+    for keyframe_json in sorted(Path(keyframes_dir).rglob("*.json")):
         with open(keyframe_json, 'r') as f:
             keyframe_data = json.load(f)
-        
-        #keyframe_data.setdefault("keyframe_filename", keyframe_json.name)
-        
+
         text = generate_vectorization_text(film_metadata, keyframe_data)
+
         doc = Document(
             page_content=text,
             metadata={
+                "film_title": film_metadata.get('title', 'Unknown'),
+                "year": film_metadata.get('year', 'Unknown'),
+                "country": film_metadata.get('country', 'Unknown'),
+                "description": film_metadata.get('dcDescription', {}),
+                "cut_id": keyframe_json.parent.parent.name,
                 "keyframe": keyframe_json.name,
-                "Film Title": film_metadata.get('title', 'Unknown'),
-                #f"Film Title: {film_metadata.get('dcTitleLangAware', {}).get(language, ['Unknown'])[0]}",
-                "Year": film_metadata.get('year', 'Unknown'),
-                "Country": film_metadata.get('country', 'Unknown'),
-                "Description": film_metadata.get('dcDescription', {})
             }
         )
         docs.append(doc)
-    
+
     return docs
 
-# TODO refactor into load chroma, create chroma from path
-def load_or_create_chroma(path, persist_dir="chroma_db"):
+
+def load_or_create_chroma(path="processing", persist_dir="chroma_db"):
     embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     if Path(persist_dir).exists():
         print("Loading existing Chroma DB...")
@@ -89,40 +84,23 @@ def load_or_create_chroma(path, persist_dir="chroma_db"):
     for film_dir in Path(path).iterdir():
         if not film_dir.is_dir():
             continue
-        
-        film_id = film_dir.name
-        metadata_path = Path("metadata") / f"{film_id}.json"
-        keyframe_jsons = film_dir / "keyframes"
 
-        if not metadata_path.exists() or not keyframe_jsons.exists():
-            print(f"Skipping {film_id} — missing metadata or keyframes.")
+        metadata_path = Path("metadata") / f"{film_dir.name}.json"
+        if not metadata_path.exists():
+            print(f"Skipping {film_dir} — missing metadata.")
             continue
 
-        film_metadata = _load_film_metadata(metadata_path)
+        # go through all cut keyframe dirs
+        for cut_dir in (film_dir / "key_frames").iterdir():
+            keyframes_dir = cut_dir / "keyframes"
+            if not keyframes_dir.exists():
+                continue
 
-        for json_file in keyframe_jsons.glob("*.json"):
-            try:
-                with open(json_file, "r", encoding="utf-8") as f:
-                    keyframe_data = json.load(f)
-                
-                text = generate_vectorization_text(film_metadata, keyframe_data)
-                doc = Document(
-                    page_content=text,
-                    metadata={
-                        "film_title": film_metadata.get('title', 'Unknown'),
-                        "year": film_metadata.get('year', 'Unknown'),
-                        "country": film_metadata.get('country', 'Unknown'),
-                        "keyframe": keyframe_data.get('filename', 'N/A'),
-                    }
-                )
-                documents.append(doc)
-
-            except Exception as e:
-                print(f"Skipping {json_file} due to error: {e}")
+            docs = generate_docs(metadata_path, keyframes_dir)
+            documents.extend(docs)
 
     if not documents:
         raise ValueError("No valid documents found to embed.")
 
     db = Chroma.from_documents(documents, embedding_function, persist_directory=persist_dir)
-    db.persist()
     return db
