@@ -40,8 +40,6 @@ def query_ollama(prompt, model=MODEL_NAME):     # check which models available i
     return result["response"]
 
 
-# TODO move ollama call to own file
-# TODO integrate json into responses
 def main(args : argparse.Namespace):
 
     film_jsons = load_jsons(PATH_FILMS)

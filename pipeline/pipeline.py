@@ -4,6 +4,7 @@ sys.path.append(os.getcwd())
 import argparse
 import json
 
+
 from ultralytics import YOLO
 from KeyFrameDetector.key_frame_detector import keyframeDetection
 from cutdetection import CutDetector
@@ -20,19 +21,17 @@ from langchain.docstore.document import Document
 from langchain_community.vectorstores.utils import filter_complex_metadata
 
 
-DATASETS = "datasets/"
-#DATASETS = "datasets_2/"   # for testing purposes
-
 
 def main(args : argparse.Namespace):
     steps = pipeline_steps(args.steps)
+    config = args.config
     
-    films = find_films(DATASETS)
+    films = find_films(config.Paths.film_data)
     for film in films:
         print(film.video_file)
 
-    model_path = os.path.abspath("models/yolov8x.pt")
-    model = YOLO(model_path)
+    obj_detect_model_path = os.path.abspath(config.Paths.obj_detect_model)
+    obj_detect_model = YOLO(obj_detect_model_path)
     
     db = load_chroma()
     
@@ -83,7 +82,7 @@ def main(args : argparse.Namespace):
             objects, shot_type = None, None
             #if 3 in steps:
             ## Step 3: Object detection on keyframe
-            objects = detect_objects(keyframe, model)
+            objects = detect_objects(keyframe, obj_detect_model)
 
             #if 4 in steps:
             ## Step 4: Shot type detection on keyframe
@@ -99,21 +98,14 @@ def main(args : argparse.Namespace):
 
     docs = []
 
-    # TODO refactor into docs.append(film.generate_film_doc()) etc once print not needed anymore
     for film in films:
-        film_doc = film.generate_film_doc()
-        print(film_doc)
-        docs.append(film_doc)
+        docs.append(film.generate_film_doc())
 
         for cut in film.cuts:
-            cut_doc = cut.generate_cut_doc()
-            print(cut_doc)
-            docs.append(cut_doc)
+            docs.append(cut.generate_cut_doc())
 
         for transition in film.transitions:
-            trans_doc = transition.generate_transition_doc()
-            print(trans_doc)
-            docs.append(trans_doc)
+            docs.append(transition.generate_transition_doc())
 
     ## Embedding
     if docs:
@@ -127,6 +119,9 @@ if __name__ == '__main__':
                     required=False,
                     default="1,2",
                     help='Specify pipeline steps, either with e.g. 2-4 for steps 2,3,4 or separated by comma.'  )
-    
+    parser.add_argument('-c', '--config',
+                    required=False,
+                    default="config/config.ini",
+                    help='Specify the path to the config file.' )
     args : argparse.Namespace = parser.parse_args()
     main(args)
